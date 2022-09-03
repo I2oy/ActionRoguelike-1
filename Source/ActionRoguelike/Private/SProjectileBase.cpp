@@ -2,6 +2,8 @@
 
 
 #include "SProjectileBase.h"
+
+#include "Components/AudioComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -15,6 +17,10 @@ ASProjectileBase::ASProjectileBase()
 	SphereComp->OnComponentHit.AddDynamic(this, &ASProjectileBase::OnActorHit);
 	RootComponent = SphereComp;
 
+	SoundComp = CreateDefaultSubobject<UAudioComponent>("SoundComp");
+	SoundComp->SetupAttachment(RootComponent);
+	SoundComp->Activate();
+	
 	EffectComp = CreateDefaultSubobject<UParticleSystemComponent>("EffectComp");
 	EffectComp->SetupAttachment(RootComponent);
 
@@ -41,7 +47,7 @@ void ASProjectileBase::Explode_Implementation()
 	if (ensure(!IsPendingKill()))
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
-
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSFX, GetActorLocation(), GetActorRotation());
 		Destroy();
 	}
 }

@@ -32,6 +32,12 @@ ASCharacter::ASCharacter()
 	AttackAnimDelay = 0.2f;
 }
 
+void ASCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	AttributeComp->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
+}
+
 
 // Called to bind functionality to input
 void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -171,5 +177,22 @@ void ASCharacter::PrimaryInteract()
 	if (InteractionComp)
 	{
 		InteractionComp->PrimaryInteract();
+	}
+}
+
+void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth,
+	float Delta)
+{
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (Delta < 0.0f)
+	{
+		if(USkeletalMeshComponent* MeshComp = Cast<USkeletalMeshComponent>(OwningComp->GetOwner()->GetComponentByClass(USkeletalMeshComponent::StaticClass())))
+		{
+			MeshComp->SetScalarParameterValueOnMaterials("TimeToHit", GetWorld()->TimeSeconds);
+		}
+	}
+	if(NewHealth <= 0.0f && Delta < 0.0f)
+	{
+		DisableInput(PC);
 	}
 }
