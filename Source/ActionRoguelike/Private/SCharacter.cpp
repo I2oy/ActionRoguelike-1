@@ -8,6 +8,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "SInteractionComponent.h"
 #include "SAttributeComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -90,6 +92,11 @@ void ASCharacter::PrimaryAttack()
 {
 	PlayAnimMontage(AttackAnim);
 
+	if(CastingVFX)
+	{
+		UGameplayStatics::SpawnEmitterAttached(CastingVFX, GetMesh(),"Muzzle_01");
+	}
+		
 	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::PrimaryAttack_TimeElapsed, AttackAnimDelay);
 }
 
@@ -104,6 +111,11 @@ void ASCharacter::BlackHoleAttack()
 {
 	PlayAnimMontage(AttackAnim);
 
+	if(CastingVFX)
+	{
+		UGameplayStatics::SpawnEmitterAttached(CastingVFX, GetMesh(),"Muzzle_01");
+	}
+
 	GetWorldTimerManager().SetTimer(TimerHandle_BlackholeAttack, this, &ASCharacter::BlackholeAttack_TimeElapsed, AttackAnimDelay);
 }
 
@@ -117,6 +129,11 @@ void ASCharacter::BlackholeAttack_TimeElapsed()
 void ASCharacter::Dash()
 {
 	PlayAnimMontage(AttackAnim);
+	
+	if(CastingVFX)
+	{
+		UGameplayStatics::SpawnEmitterAttached(CastingVFX, GetMesh(),"Muzzle_01");
+	}
 
 	GetWorldTimerManager().SetTimer(TimerHandle_Dash, this, &ASCharacter::Dash_TimeElapsed, AttackAnimDelay);
 }

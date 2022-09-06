@@ -24,6 +24,11 @@ bool USAttributeComponent::IsAlive() const
 
 bool USAttributeComponent::ApplyHealthChange(float Delta)
 {
+	if(Health == MaxHealth && Delta > 0.0f)
+	{
+		return false;
+	}
+	
 	Health += Delta;
 
 	Health = FMath::Clamp(Health, 0, MaxHealth);

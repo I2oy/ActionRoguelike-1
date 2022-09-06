@@ -27,6 +27,15 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	USoundBase* ImpactSFX;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	TSubclassOf<UCameraShakeBase> CameraShake;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	float CameraShakeRadius;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	float CameraShakeInnerRadius;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UAudioComponent* SoundComp;

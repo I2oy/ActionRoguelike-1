@@ -16,7 +16,7 @@ public:
 	// Sets default values for this actor's properties
 	ASItemPickup();
 
-	void Interact_Implementation(APawn* InstigatorPawn);
+	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
 
 protected:
 
