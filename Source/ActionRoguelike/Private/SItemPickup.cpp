@@ -16,15 +16,15 @@ ASItemPickup::ASItemPickup()
 void ASItemPickup::Interact_Implementation(APawn* InstigatorPawn)
 {
 	GetWorldTimerManager().SetTimer(TimerHandle_Respawn, this, &ASItemPickup::Respawn, 3.0);
-	this->SetActorEnableCollision(false);
-	this->SetActorHiddenInGame(true);
+	SetActorEnableCollision(false);
+	SetActorHiddenInGame(true);
 	
 }
 
 void ASItemPickup::Respawn()
 {
-	this->SetActorEnableCollision(true);
-	this->SetActorHiddenInGame(false);
+	SetActorEnableCollision(true);
+	SetActorHiddenInGame(false);
 }
 
 // Called when the game starts or when spawned
