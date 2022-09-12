@@ -20,6 +20,9 @@ class ACTIONROGUELIKE_API ASCharacter : public ACharacter
 
 protected:
 
+	UPROPERTY(VisibleAnywhere, Category="Effects")
+	FName TimeToHitParam;
+
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	TSubclassOf<AActor> ProjectileClass;
 

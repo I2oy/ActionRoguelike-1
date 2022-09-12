@@ -32,6 +32,8 @@ ASCharacter::ASCharacter()
 	bUseControllerRotationYaw = false;
 
 	AttackAnimDelay = 0.2f;
+
+	TimeToHitParam = "TimeToHit";
 }
 
 void ASCharacter::PostInitializeComponents()
@@ -205,7 +207,7 @@ void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent*
 	{
 		if(USkeletalMeshComponent* MeshComp = Cast<USkeletalMeshComponent>(OwningComp->GetOwner()->GetComponentByClass(USkeletalMeshComponent::StaticClass())))
 		{
-			MeshComp->SetScalarParameterValueOnMaterials("TimeToHit", GetWorld()->TimeSeconds);
+			GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParam, GetWorld()->TimeSeconds);
 		}
 	}
 	if(NewHealth <= 0.0f && Delta < 0.0f)

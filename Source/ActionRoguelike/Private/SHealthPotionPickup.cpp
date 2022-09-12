@@ -16,7 +16,7 @@ void ASHealthPotionPickup::Interact_Implementation(APawn* InstigatorPawn)
 	USAttributeComponent* AttributeComp = InstigatorPawn->FindComponentByClass<USAttributeComponent>();
 	if(AttributeComp)
 	{
-		if(!AttributeComp->ApplyHealthChange(HealthRestore))
+		if(!AttributeComp->ApplyHealthChange(this, HealthRestore))
 		{
 			return;
 		}
