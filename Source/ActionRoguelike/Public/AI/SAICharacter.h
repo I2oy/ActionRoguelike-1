@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "SAICharacter.generated.h"
 
+class USWorldUserWidget;
 class USAttributeComponent;
 class UPawnSensingComponent;
 UCLASS()
@@ -20,6 +21,11 @@ public:
 	virtual void PostInitializeComponents() override;
 	
 protected:
+	
+	USWorldUserWidget* ActiveHealthBar;
+	
+	UPROPERTY(EditDefaultsOnly, Category="AI")
+	TSubclassOf<UUserWidget> HealthBarWidgetClass;
 
 	UPROPERTY(VisibleAnywhere, Category="Effects")
 	FName TimeToHitParam;
