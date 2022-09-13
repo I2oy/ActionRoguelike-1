@@ -21,6 +21,16 @@ bool USAttributeComponent::IsAlive() const
 	return Health > 0.0f;
 }
 
+float USAttributeComponent::GetHealth()
+{
+	return Health;
+}
+
+float USAttributeComponent::GetMaxHealth()
+{
+	return MaxHealth;
+}
+
 
 bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delta)
 {

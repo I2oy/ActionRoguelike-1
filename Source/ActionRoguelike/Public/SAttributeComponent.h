@@ -17,6 +17,12 @@ class ACTIONROGUELIKE_API USAttributeComponent : public UActorComponent
 public:
 
 	UFUNCTION(BlueprintCallable)
+	float GetHealth();
+
+	UFUNCTION(BlueprintCallable)
+	float GetMaxHealth();
+	
+	UFUNCTION(BlueprintCallable)
 	bool Kill(AActor* InstigatorActor);
 
 	UFUNCTION(BlueprintCallable, Category="Attributes")
