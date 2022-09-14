@@ -10,6 +10,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Perception/PawnSensingComponent.h"
 
 
@@ -21,6 +22,9 @@ ASAICharacter::ASAICharacter()
 	AttributeComp = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
 	
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
+	GetMesh()->SetGenerateOverlapEvents(true);
 
 	TimeToHitParam = "TimeToHit";
 }
@@ -86,6 +90,7 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 			GetMesh()->SetAllBodiesSimulatePhysics(true);
 			GetMesh()->SetCollisionProfileName("Ragdoll");
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			GetCharacterMovement()->DisableMovement();
 			
 			// Set lifespan
 			SetLifeSpan(10.0f);
