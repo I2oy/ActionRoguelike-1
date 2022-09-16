@@ -12,6 +12,7 @@ class USInteractionComponent;
 class UAnimMontage;
 class USAttributeComponent;
 class UParticleSystemComponent;
+class USActionComponent;
 
 UCLASS()
 class ACTIONROGUELIKE_API ASCharacter : public ACharacter
@@ -22,27 +23,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category="Effects")
 	FName TimeToHitParam;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	TSubclassOf<AActor> ProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	TSubclassOf<AActor> BlackHoleProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	TSubclassOf<AActor> DashProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	UAnimMontage* AttackAnim;
-	FTimerHandle TimerHandle_PrimaryAttack;
-	FTimerHandle TimerHandle_BlackholeAttack;
-	FTimerHandle TimerHandle_Dash;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Attack")
-	float AttackAnimDelay;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Attack")
-	UParticleSystem* CastingVFX;
 
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* SpringArmComp;
@@ -56,24 +36,22 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USAttributeComponent* AttributeComp;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USActionComponent* ActionComp;
+
 	void MoveForward(float Value);
 
 	void MoveRight(float Value);
 
-	void PrimaryAttack();
+	void SprintStart();
 
-	void PrimaryAttack_TimeElapsed();
+	void SprintStop();
+
+	void PrimaryAttack();
 
 	void BlackHoleAttack();
 
-	void BlackholeAttack_TimeElapsed();
-
 	void Dash();
-
-	void Dash_TimeElapsed();
-
-	// Re-use spawn logic between attacks
-	void SpawnProjectile(TSubclassOf<AActor> ClassToSpawn);
 
 	void PrimaryInteract();
 
