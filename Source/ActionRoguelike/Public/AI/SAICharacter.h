@@ -9,6 +9,7 @@
 class USWorldUserWidget;
 class USAttributeComponent;
 class UPawnSensingComponent;
+class USActionComponent;
 UCLASS()
 class ACTIONROGUELIKE_API ASAICharacter : public ACharacter
 {
@@ -32,17 +33,20 @@ protected:
 
 	void SetTargetActor(AActor* NewTarget);
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	USAttributeComponent* AttributeComp;
-	
 	UFUNCTION()
 	void OnPawnSeen(APawn* Pawn);
 
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);
-	
+
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UPawnSensingComponent* PawnSensingComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USAttributeComponent* AttributeComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USActionComponent* ActionComp;
 
 public:	
 	
