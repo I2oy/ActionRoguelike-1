@@ -7,6 +7,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "SGameModeBase.generated.h"
 
+class ASItemPickup;
 class UEnvQuery;
 class UEnvQueryInstanceBlueprintWrapper;
 class UCurveFloat;
@@ -34,11 +35,23 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="AI")
 	float SpawnTimerInterval;
 
+	UPROPERTY(EditDefaultsOnly, Category="Pickups")
+	TArray<TSubclassOf<ASItemPickup>> PickupClasses;
+
+	UPROPERTY(EditDefaultsOnly, Category="Pickups")
+	UEnvQuery* SpawnPickupsQuery;
+
+	UFUNCTION()
+	void SpawnPickups();
+
 	UFUNCTION()
 	void SpawnBotTimerElapsed();
 
 	UFUNCTION()
 	void OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
+
+	UFUNCTION()
+	void OnPickupQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
 
 	UFUNCTION()
 	void RespawnPlayerElapsed(AController* Controller);

@@ -9,6 +9,7 @@
 #include "SPlayerState.h"
 #include "AI/SAICharacter.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
+#include "SItemPickup.h"
 
 static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("su.SpawnBots"), true, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
 
@@ -22,6 +23,8 @@ void ASGameModeBase::StartPlay()
 	Super::StartPlay();
 
 	GetWorldTimerManager().SetTimer(TimerHandle_SpawnBots, this, &ASGameModeBase::SpawnBotTimerElapsed, SpawnTimerInterval, true);
+
+	SpawnPickups();
 }
 
 void ASGameModeBase::KillAll()
@@ -36,6 +39,13 @@ void ASGameModeBase::KillAll()
 			AttributeComp->Kill(this); // @fixme: pass in player? for kill credit
 		}
 	}
+}
+
+void ASGameModeBase::SpawnPickups()
+{
+	UEnvQueryInstanceBlueprintWrapper* QueryInstance = UEnvQueryManager::RunEQSQuery(this, SpawnPickupsQuery, this, EEnvQueryRunMode::AllMatching, nullptr);
+
+	QueryInstance->GetOnQueryFinishedEvent().AddDynamic(this, &ASGameModeBase::OnPickupQueryCompleted);
 }
 
 void ASGameModeBase::SpawnBotTimerElapsed()
@@ -95,6 +105,28 @@ void ASGameModeBase::OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryIn
 
 		// Track all the used spawn locations
 		DrawDebugSphere(GetWorld(), Locations[0], 50.0f, 20, FColor::Blue, false, 60.0f);
+	}
+}
+
+void ASGameModeBase::OnPickupQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus)
+{
+	if(QueryStatus != EEnvQueryStatus::Success)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Spawn pickups EQS Query Failed!"));
+		return;
+	}
+	if(PickupClasses.IsEmpty())
+	{
+		return;
+	}
+
+	TArray<FVector> Locations = QueryInstance->GetResultsAsLocations();
+
+	for(FVector Location: Locations)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Item Location: %s"), *Location.ToCompactString());
+		// Get a random pickup from the list in the array of pickups
+		GetWorld()->SpawnActor<AActor>(PickupClasses[FMath::RandHelper(PickupClasses.Num())], Location, FRotator::ZeroRotator);
 	}
 }
 
