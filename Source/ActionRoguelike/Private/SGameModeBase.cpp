@@ -6,6 +6,7 @@
 #include "EngineUtils.h"
 #include "SAttributeComponent.h"
 #include "SCharacter.h"
+#include "SPlayerState.h"
 #include "AI/SAICharacter.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
 
@@ -118,6 +119,14 @@ void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 		
 		float RespawnDelay = 2.0f;
 		GetWorldTimerManager().SetTimer(TimerHandle_RespawnDelay, Delegate, RespawnDelay, false);
+	}
+	else if(ASCharacter* PlayerKiller = Cast<ASCharacter>(Killer))
+	{
+		ASPlayerState* PlayerState = Cast<ASPlayerState>(PlayerKiller->Controller->PlayerState);
+		if(PlayerState)
+		{
+			PlayerState->AddCredits(VictimActor, 1);
+		}
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("OnActorKilled: Victim: %s, Killer: %s"), *GetNameSafe(VictimActor), *GetNameSafe(Killer));

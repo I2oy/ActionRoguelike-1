@@ -4,6 +4,7 @@
 #include "SHealthPotionPickup.h"
 
 #include "SAttributeComponent.h"
+#include "SPlayerState.h"
 
 
 ASHealthPotionPickup::ASHealthPotionPickup()
@@ -13,12 +14,20 @@ ASHealthPotionPickup::ASHealthPotionPickup()
 
 void ASHealthPotionPickup::Interact_Implementation(APawn* InstigatorPawn)
 {
-	USAttributeComponent* AttributeComp = InstigatorPawn->FindComponentByClass<USAttributeComponent>();
-	if(AttributeComp)
+	ASPlayerState* PlayerState = Cast<ASPlayerState>(InstigatorPawn->Controller->PlayerState);
+	if(PlayerState)
 	{
-		if(!AttributeComp->ApplyHealthChange(this, HealthRestore))
+		USAttributeComponent* AttributeComp = InstigatorPawn->FindComponentByClass<USAttributeComponent>();
+		if(AttributeComp)
 		{
-			return;
+			if(!PlayerState->SpendCredits(GetParentActor(), 5))
+			{
+				return;
+			}
+			if(!AttributeComp->ApplyHealthChange(this, HealthRestore))
+			{
+				return;
+			}
 		}
 	}
 	Super::Interact_Implementation(InstigatorPawn);
