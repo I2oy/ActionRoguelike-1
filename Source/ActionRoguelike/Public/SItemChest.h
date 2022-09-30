@@ -23,6 +23,12 @@ public:
 
 protected:
 
+	UPROPERTY(ReplicatedUsing="OnRep_LipOpened", BlueprintReadOnly) // RebNotify
+	bool bLidOpened;
+
+	UFUNCTION()
+	void OnRep_LipOpened();
+
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* BaseMesh;
 
@@ -33,4 +39,6 @@ public:
 
 	// Sets default values for this actor's properties
 	ASItemChest();
+
+
 };
