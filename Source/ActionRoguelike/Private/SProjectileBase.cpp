@@ -31,6 +31,8 @@ ASProjectileBase::ASProjectileBase()
 	MoveComp->InitialSpeed = 8000;
 
 	CameraShakeRadius = 500.0f;
+
+	SetReplicates(true);
 }
 
 

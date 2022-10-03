@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "SItemPickup.generated.h"
 
+class USphereComponent;
 UCLASS()
 class ACTIONROGUELIKE_API ASItemPickup : public AActor, public ISGameplayInterface
 {
@@ -22,6 +23,12 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* ItemMesh;
+
+	UPROPERTY(VisibleAnywhere)
+	USphereComponent* SphereComp;
+
+	UPROPERTY(VisibleAnywhere)
+	float RespawnTime;
 
 	FTimerHandle TimerHandle_Respawn;
 

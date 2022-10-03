@@ -2,6 +2,7 @@
 
 
 #include "SItemPickup.h"
+#include "Components/SphereComponent.h"
 
 // Sets default values
 ASItemPickup::ASItemPickup()
@@ -9,13 +10,23 @@ ASItemPickup::ASItemPickup()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	SphereComp = CreateDefaultSubobject<USphereComponent>("SphereComp");
+	SphereComp->SetCollisionProfileName("Pickup");
+	RootComponent = SphereComp;
+
+
 	ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemMesh"));
-	RootComponent = ItemMesh;
+	ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	ItemMesh->SetupAttachment(RootComponent);
+
+	RespawnTime = 10.0f;
+
+	SetReplicates(true);
 }
 
 void ASItemPickup::Interact_Implementation(APawn* InstigatorPawn)
 {
-	GetWorldTimerManager().SetTimer(TimerHandle_Respawn, this, &ASItemPickup::Respawn, 3.0);
+	GetWorldTimerManager().SetTimer(TimerHandle_Respawn, this, &ASItemPickup::Respawn, RespawnTime);
 	SetActorEnableCollision(false);
 	SetActorHiddenInGame(true);
 	
