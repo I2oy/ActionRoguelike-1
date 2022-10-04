@@ -11,8 +11,11 @@ static TAutoConsoleVariable<float> CVarDamageMultiplier(TEXT("su.DamageMultiplie
 // Sets default values for this component's properties
 USAttributeComponent::USAttributeComponent()
 {
-	MaxHealth = 100;
+	MaxHealth = 100.0f;
 	Health = MaxHealth;
+
+	MaxRage = 30.0f;
+	Rage = 0.0f;
 
 	SetIsReplicatedByDefault(true);
 }
@@ -37,6 +40,38 @@ float USAttributeComponent::GetMaxHealth()
 	return MaxHealth;
 }
 
+float USAttributeComponent::GetRage()
+{
+	return Rage;
+}
+
+float USAttributeComponent::GetMaxRage()
+{
+	return MaxRage;
+}
+
+bool USAttributeComponent::ApplyRageChange(AActor* InstigatorActor, float Delta)
+{
+	const float OldRage = Rage;
+
+
+	Rage = FMath::Clamp(Rage + Delta, 0.0f, MaxRage);
+	UE_LOG(LogTemp, Log, TEXT("Adding Rage Delta %f, New Rage %f, OldRage %f"), Delta, Rage, OldRage);
+	const float ActualDelta = Rage - OldRage;
+	// OnHealthChanged.Broadcast(InstigatorActor, this, Health, ActualDelta);
+
+
+	UE_LOG(LogTemp, Log, TEXT("Checking Rage Delta %f, ActualDelta %f"), Delta, ActualDelta);
+
+	if(ActualDelta != 0.0f)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Called Rage Multicast!"));
+		MulticastRageChanged(InstigatorActor, Rage, ActualDelta);
+	}
+
+	return ActualDelta != 0;
+}
+
 
 bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delta)
 {
@@ -46,21 +81,29 @@ bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 	}
 	if(Delta < 0.0f)
 	{
-		float DamageMultiplier = CVarDamageMultiplier.GetValueOnGameThread();
+		const float DamageMultiplier = CVarDamageMultiplier.GetValueOnGameThread();
 
 		Delta *= DamageMultiplier;
 	}
-	float OldHealth = Health;
+	const float OldHealth = Health;
 
 	Health = FMath::Clamp(Health + Delta, 0.0f, MaxHealth);
 
-	float ActualDelta = Health - OldHealth;
+	const float ActualDelta = Health - OldHealth;
 	// OnHealthChanged.Broadcast(InstigatorActor, this, Health, ActualDelta);
 
 	if(ActualDelta != 0.0f)
 	{
 		MulticastHealthChanged(InstigatorActor, Health, ActualDelta);
+		UE_LOG(LogTemp, Log, TEXT("Called Damage Multicast!"));
+		if(ActualDelta < 0.0f)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Called Rage Apply!"));
+
+			ApplyRageChange(InstigatorActor, -ActualDelta);
+		}
 	}
+
 	// Died
 	if(ActualDelta < 0.0f && Health == 0.0f)
 	{
@@ -106,11 +149,18 @@ void USAttributeComponent::MulticastHealthChanged_Implementation(AActor* Instiga
 	OnHealthChanged.Broadcast(InstigatorActor, this, NewHealth, Delta);
 }
 
+void USAttributeComponent::MulticastRageChanged_Implementation(AActor* InstigatorActor, float NewRage, float Delta)
+{
+	OnRageChanged.Broadcast(InstigatorActor, this, NewRage, Delta);
+}
+
 void USAttributeComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(USAttributeComponent, Health);
 	DOREPLIFETIME(USAttributeComponent, MaxHealth);
+	DOREPLIFETIME(USAttributeComponent, Rage);
+	DOREPLIFETIME(USAttributeComponent, MaxRage);
 	// DOREPLIFETIME_CONDITION(USAttributeComponent, MaxHealth, COND_InitialOnly);
 }
