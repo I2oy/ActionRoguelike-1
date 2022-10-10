@@ -22,11 +22,16 @@ public:
 	virtual void PostInitializeComponents() override;
 	
 protected:
+
+	USWorldUserWidget* SpottedWidget;
 	
 	USWorldUserWidget* ActiveHealthBar;
 	
 	UPROPERTY(EditDefaultsOnly, Category="AI")
 	TSubclassOf<UUserWidget> HealthBarWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, Category="AI")
+	TSubclassOf<UUserWidget> SpottedWidgetClass;
 
 	UPROPERTY(VisibleAnywhere, Category="Effects")
 	FName TimeToHitParam;
@@ -35,6 +40,9 @@ protected:
 
 	UFUNCTION()
 	void OnPawnSeen(APawn* Pawn);
+
+	UFUNCTION()
+	void SpottedTimerElapsed();
 
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);

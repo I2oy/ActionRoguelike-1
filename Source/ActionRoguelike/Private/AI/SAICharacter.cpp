@@ -52,9 +52,45 @@ void ASAICharacter::SetTargetActor(AActor* NewTarget)
 
 void ASAICharacter::OnPawnSeen(APawn* Pawn)
 {
+	APawn* PreviousTargetActor;
+	AAIController* AIC = Cast<AAIController>(GetController());
+	if(AIC)
+	{
+		PreviousTargetActor = Cast<APawn>(AIC->GetBlackboardComponent()->GetValueAsObject("TargetActor"));
+		if(PreviousTargetActor)
+		{
+			if(PreviousTargetActor == Pawn)
+			{
+				DrawDebugString(GetWorld(), GetActorLocation(), "Player Spotted", nullptr, FColor::White, 4.0f, true);
+
+				SpottedWidget = CreateWidget<USWorldUserWidget>(GetWorld(), SpottedWidgetClass);
+
+				if(SpottedWidget)
+				{
+					if(!SpottedWidget->IsInViewport())
+					{
+						SpottedWidget->AddToViewport();
+					}
+					SpottedWidget->AttachedActor = this;
+					FTimerHandle SpottedHandle;
+					GetWorldTimerManager().SetTimer(SpottedHandle, this, &ASAICharacter::SpottedTimerElapsed, 2.0f, false);
+				}
+			}
+		}
+	}
+
 	SetTargetActor(Pawn);
-	
-	DrawDebugString(GetWorld(), GetActorLocation(), "Player Spotted", nullptr, FColor::White, 4.0f, true);
+}
+
+void ASAICharacter::SpottedTimerElapsed()
+{
+	UE_LOG(LogTemp, Display, TEXT("Called Spotted elapsed!!"));
+
+	if(SpottedWidget)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Removing from parent!"));
+		SpottedWidget->RemoveFromParent();
+	}
 }
 
 void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth,
