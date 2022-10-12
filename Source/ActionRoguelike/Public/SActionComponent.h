@@ -18,6 +18,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tags")
 	FGameplayTagContainer ActiveGameplayTags;
 
+	UFUNCTION(BlueprintCallable, Category = "Actions")
+	USAction* GetAction(TSubclassOf<USAction> ActionClass) const;
+
 	UFUNCTION(BlueprintCallable, Category="Actions")
 	void AddAction(AActor* Instigator, TSubclassOf<USAction> ActionClass);
 

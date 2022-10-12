@@ -35,6 +35,11 @@ protected:
 	UFUNCTION()
 	void Respawn();
 
+	UFUNCTION()
+	void HideAndCooldownPowerUp();
+
+	UFUNCTION()
+	void SetPickupState(bool bNewIsActive);
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

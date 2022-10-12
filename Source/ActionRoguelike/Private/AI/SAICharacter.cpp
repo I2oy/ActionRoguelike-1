@@ -30,6 +30,7 @@ ASAICharacter::ASAICharacter()
 	GetMesh()->SetGenerateOverlapEvents(true);
 
 	TimeToHitParam = "TimeToHit";
+	TargetActorKey = "TargetActor";
 }
 
 void ASAICharacter::PostInitializeComponents()
@@ -40,46 +41,41 @@ void ASAICharacter::PostInitializeComponents()
 	AttributeComp->OnHealthChanged.AddDynamic(this, &ASAICharacter::OnHealthChanged);
 }
 
+AActor* ASAICharacter::GetTargetActor() const
+{
+	AAIController* AIC = Cast<AAIController>(GetController());
+	if(AIC)
+	{
+		return Cast<AActor>(AIC->GetBlackboardComponent()->GetValueAsObject(TargetActorKey));
+	}
+	return nullptr;
+}
+
 void ASAICharacter::SetTargetActor(AActor* NewTarget)
 {
 	AAIController* AIC = Cast<AAIController>(GetController());
 	if(AIC)
 	{
-		AIC->GetBlackboardComponent()->SetValueAsObject("TargetActor", NewTarget);
+		AIC->GetBlackboardComponent()->SetValueAsObject(TargetActorKey, NewTarget);
 	}
 }
 
 
 void ASAICharacter::OnPawnSeen(APawn* Pawn)
 {
-	APawn* PreviousTargetActor;
-	AAIController* AIC = Cast<AAIController>(GetController());
-	if(AIC)
+	if(GetTargetActor() != Pawn)
 	{
-		PreviousTargetActor = Cast<APawn>(AIC->GetBlackboardComponent()->GetValueAsObject("TargetActor"));
-		if(PreviousTargetActor)
+		SetTargetActor(Pawn);
+		USWorldUserWidget* NewWidget = CreateWidget<USWorldUserWidget>(GetWorld(), SpottedWidgetClass);
+		if(NewWidget)
 		{
-			if(PreviousTargetActor == Pawn)
-			{
-				DrawDebugString(GetWorld(), GetActorLocation(), "Player Spotted", nullptr, FColor::White, 4.0f, true);
+			NewWidget->AttachedActor = this;
 
-				SpottedWidget = CreateWidget<USWorldUserWidget>(GetWorld(), SpottedWidgetClass);
-
-				if(SpottedWidget)
-				{
-					if(!SpottedWidget->IsInViewport())
-					{
-						SpottedWidget->AddToViewport();
-					}
-					SpottedWidget->AttachedActor = this;
-					FTimerHandle SpottedHandle;
-					GetWorldTimerManager().SetTimer(SpottedHandle, this, &ASAICharacter::SpottedTimerElapsed, 2.0f, false);
-				}
-			}
+			// Index of 10 (or anything higher than the default of 0) places this on top of anyother widget.
+			// May end up behind the minion health bar otherwise.
+			NewWidget->AddToViewport(10);
 		}
 	}
-
-	SetTargetActor(Pawn);
 }
 
 void ASAICharacter::SpottedTimerElapsed()

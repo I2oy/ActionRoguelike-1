@@ -26,16 +26,18 @@ ASItemPickup::ASItemPickup()
 
 void ASItemPickup::Interact_Implementation(APawn* InstigatorPawn)
 {
-	GetWorldTimerManager().SetTimer(TimerHandle_Respawn, this, &ASItemPickup::Respawn, RespawnTime);
-	SetActorEnableCollision(false);
-	SetActorHiddenInGame(true);
-	
+	HideAndCooldownPowerUp();
 }
 
 void ASItemPickup::Respawn()
 {
-	SetActorEnableCollision(true);
-	SetActorHiddenInGame(false);
+	SetPickupState(true);
+}
+
+void ASItemPickup::HideAndCooldownPowerUp()
+{
+	SetPickupState(false);
+	GetWorldTimerManager().SetTimer(TimerHandle_Respawn, this, &ASItemPickup::Respawn, RespawnTime);
 }
 
 // Called when the game starts or when spawned
@@ -52,3 +54,10 @@ void ASItemPickup::Tick(float DeltaTime)
 
 }
 
+void ASItemPickup::SetPickupState(bool bNewIsActive)
+{
+	SetActorEnableCollision(bNewIsActive);
+
+	// Set visibility on root and all children
+	RootComponent->SetVisibility(bNewIsActive, true);
+}

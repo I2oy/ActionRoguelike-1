@@ -7,9 +7,9 @@
 #include "SAttributeComponent.generated.h"
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor*, InstigatorActor, USAttributeComponent*, OwningComp, float, NewHealth, float, Delta);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnRageChanged, AActor*, InstigatorActor, USAttributeComponent*, OwningComp, float, NewRage, float, Delta);
-
+// DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor*, InstigatorActor, USAttributeComponent*, OwningComp, float, NewHealth, float, Delta);
+// DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnRageChanged, AActor*, InstigatorActor, USAttributeComponent*, OwningComp, float, NewRage, float, Delta);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnAttributeChanged, AActor*, InstigatorActor, USAttributeComponent*, OwningComp, float, NewValue, float, Delta);
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ACTIONROGUELIKE_API USAttributeComponent : public UActorComponent
 {
@@ -82,13 +82,15 @@ public:
     bool IsAlive() const;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnHealthChanged OnHealthChanged;
+	FOnAttributeChanged OnHealthChanged;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnAttributeChanged OnRageChanged;
 
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
 	bool ApplyHealthChange(AActor* InstigatorActor, float Delta);
 
-	UPROPERTY(BlueprintAssignable)
-	FOnRageChanged OnRageChanged;
+
 
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
 	bool ApplyRageChange(AActor* InstigatorActor, float Delta);

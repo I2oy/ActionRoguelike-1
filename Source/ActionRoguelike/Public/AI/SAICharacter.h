@@ -23,6 +23,8 @@ public:
 	
 protected:
 
+	FName TargetActorKey;
+
 	USWorldUserWidget* SpottedWidget;
 	
 	USWorldUserWidget* ActiveHealthBar;
@@ -36,6 +38,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category="Effects")
 	FName TimeToHitParam;
 
+	UFUNCTION()
+	AActor* GetTargetActor() const;
+
+	UFUNCTION()
 	void SetTargetActor(AActor* NewTarget);
 
 	UFUNCTION()
