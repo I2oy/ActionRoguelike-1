@@ -139,16 +139,21 @@ void ASCharacter::PrimaryInteract()
 void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth,
 	float Delta)
 {
-	APlayerController* PC = Cast<APlayerController>(GetController());
 	if (Delta < 0.0f)
 	{
 		if(USkeletalMeshComponent* MeshComp = Cast<USkeletalMeshComponent>(OwningComp->GetOwner()->GetComponentByClass(USkeletalMeshComponent::StaticClass())))
 		{
 			GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParam, GetWorld()->TimeSeconds);
+
+			float RageDelta = FMath::Abs(Delta);
+			AttributeComp->ApplyRageChange(InstigatorActor, RageDelta);
 		}
 	}
 	if(NewHealth <= 0.0f && Delta < 0.0f)
 	{
+		APlayerController* PC = Cast<APlayerController>(GetController());
 		DisableInput(PC);
+
+		SetLifeSpan(5.0f);
 	}
 }

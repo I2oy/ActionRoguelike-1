@@ -86,35 +86,33 @@ bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 		Delta *= DamageMultiplier;
 	}
 	const float OldHealth = Health;
+	const float NewHealth = FMath::Clamp(Health + Delta, 0.0f, MaxHealth);
 
-	Health = FMath::Clamp(Health + Delta, 0.0f, MaxHealth);
-
-	const float ActualDelta = Health - OldHealth;
+	const float ActualDelta = NewHealth - OldHealth;
 	// OnHealthChanged.Broadcast(InstigatorActor, this, Health, ActualDelta);
 
-	if(ActualDelta != 0.0f)
+	// Is Server?
+	if(GetOwner()->HasAuthority())
 	{
-		MulticastHealthChanged(InstigatorActor, Health, ActualDelta);
-		UE_LOG(LogTemp, Log, TEXT("Called Damage Multicast!"));
-		if(ActualDelta < 0.0f)
-		{
-			UE_LOG(LogTemp, Log, TEXT("Called Rage Apply!"));
+		Health = NewHealth;
 
-			ApplyRageChange(InstigatorActor, -ActualDelta);
+		if(ActualDelta != 0.0f)
+		{
+			MulticastHealthChanged(InstigatorActor, Health, ActualDelta);
+		}
+
+		// Died
+		if(ActualDelta < 0.0f && Health == 0.0f)
+		{
+			ASGameModeBase* GM = GetWorld()->GetAuthGameMode<ASGameModeBase>();
+
+			if(GM)
+			{
+				GM->OnActorKilled(GetOwner(), InstigatorActor);
+			}
 		}
 	}
 
-	// Died
-	if(ActualDelta < 0.0f && Health == 0.0f)
-	{
-		ASGameModeBase* GM = GetWorld()->GetAuthGameMode<ASGameModeBase>();
-
-		if(GM)
-		{
-			GM->OnActorKilled(GetOwner(), InstigatorActor);
-		}
-	}
-	
 	return ActualDelta != 0;
 }
 
