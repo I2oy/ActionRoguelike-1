@@ -7,10 +7,18 @@
 #include "SPlayerState.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnCreditChanged, AActor*, InstigatorActor, APlayerState*, OwningComp, float, NewCredit, float, Delta);
+
+class USSaveGame;
+
 UCLASS()
 class ACTIONROGUELIKE_API ASPlayerState : public APlayerState
 {
 	GENERATED_BODY()
+
+protected:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int32 Credits;
 
 public:
 
@@ -23,8 +31,10 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnCreditChanged OnCreditChanged;
 
-protected:
+	UFUNCTION(BlueprintNativeEvent)
+	void SavePlayerState(USSaveGame* SaveObject);
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	int32 Credits;
+	UFUNCTION(BlueprintNativeEvent)
+	void LoadPlayerState(USSaveGame* SaveObject);
+
 };
