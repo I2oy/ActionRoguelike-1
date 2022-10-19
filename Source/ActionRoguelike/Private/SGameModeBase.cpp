@@ -2,20 +2,27 @@
 
 
 #include "SGameModeBase.h"
-
-#include "EngineUtils.h"
+#include "EnvironmentQuery/EnvQueryManager.h"
+#include "EnvironmentQuery/EnvQueryTypes.h"
+#include "EnvironmentQuery/EnvQueryInstanceBlueprintWrapper.h"
+#include "AI/SAICharacter.h"
 #include "SAttributeComponent.h"
+#include "EngineUtils.h"
+#include "DrawDebugHelpers.h"
 #include "SCharacter.h"
 #include "SPlayerState.h"
-#include "AI/SAICharacter.h"
-#include "EnvironmentQuery/EnvQueryManager.h"
-#include "SItemPickup.h"
 #include "SSaveGame.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameStateBase.h"
 #include "SGameplayInterface.h"
+#include "SItemPickup.h"
+#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 
-static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("su.SpawnBots"), true, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
+
+// Disabled by default while working on multiplayer...
+static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("su.SpawnBots"), false, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
+
+
 
 ASGameModeBase::ASGameModeBase()
 {
@@ -26,12 +33,14 @@ ASGameModeBase::ASGameModeBase()
 	SlotName = "SaveGame01";
 }
 
+
 void ASGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
 
 	LoadSaveGame();
 }
+
 
 void ASGameModeBase::StartPlay()
 {
@@ -41,6 +50,7 @@ void ASGameModeBase::StartPlay()
 
 	SpawnPickups();
 }
+
 
 void ASGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
 {
@@ -53,14 +63,15 @@ void ASGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* N
 	}
 }
 
+
 void ASGameModeBase::KillAll()
 {
-	for(TActorIterator<ASAICharacter> It(GetWorld()); It; ++It)
+	for (TActorIterator<ASAICharacter> It(GetWorld()); It; ++It)
 	{
 		ASAICharacter* Bot = *It;
 
 		USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(Bot);
-		if(ensure(AttributeComp) && AttributeComp->IsAlive())
+		if (ensure(AttributeComp) && AttributeComp->IsAlive())
 		{
 			AttributeComp->Kill(this); // @fixme: pass in player? for kill credit
 		}
@@ -81,7 +92,7 @@ void ASGameModeBase::SpawnBotTimerElapsed()
 		UE_LOG(LogTemp, Warning, TEXT("Bot spawning disabled via cvar 'CVarSpawnBots'."));
 		return;
 	}
-	
+
 	int32 NrOfAliveBots = 0;
 
 	for(TActorIterator<ASAICharacter> It(GetWorld()); It; ++It)
@@ -109,7 +120,7 @@ void ASGameModeBase::SpawnBotTimerElapsed()
 		UE_LOG(LogTemp, Log, TEXT("At maximum bot capacity. Skipping bot spawn."));
 		return;
 	}
-	
+
 	UEnvQueryInstanceBlueprintWrapper* QueryInstance = UEnvQueryManager::RunEQSQuery(this, SpawnBotQuery, this, EEnvQueryRunMode::RandomBest5Pct, nullptr);
 
 	QueryInstance->GetOnQueryFinishedEvent().AddDynamic(this, &ASGameModeBase::OnQueryCompleted);
@@ -122,9 +133,9 @@ void ASGameModeBase::OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryIn
 		UE_LOG(LogTemp, Warning, TEXT("Spawn bot EQS Query Failed!"));
 		return;
 	}
-	
+
 	TArray<FVector> Locations = QueryInstance->GetResultsAsLocations();
-	
+
 	if(Locations.IsValidIndex(0))
 	{
 		GetWorld()->SpawnActor<AActor>(MinionClass, Locations[0], FRotator::ZeroRotator);
@@ -174,7 +185,7 @@ void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 
 		FTimerDelegate Delegate;
 		Delegate.BindUFunction(this, "RespawnPlayerElapsed", Player->GetController());
-		
+
 		float RespawnDelay = 2.0f;
 		GetWorldTimerManager().SetTimer(TimerHandle_RespawnDelay, Delegate, RespawnDelay, false);
 	}
@@ -205,11 +216,12 @@ void ASGameModeBase::WriteSaveGame()
 
 	CurrentSaveGame->SavedActors.Empty();
 
+	// Iterate the entire world of actors
 	for (FActorIterator It(GetWorld()); It; ++It)
 	{
 		AActor* Actor = *It;
 		// Only interested in our 'gameplay actors'
-		if(!Actor->Implements<USGameplayInterface>())
+		if (!Actor->Implements<USGameplayInterface>())
 		{
 			continue;
 		}
@@ -218,42 +230,60 @@ void ASGameModeBase::WriteSaveGame()
 		ActorData.ActorName = Actor->GetName();
 		ActorData.Transform = Actor->GetActorTransform();
 
+		// Pass the array to fill with data from Actor
+		FMemoryWriter MemWriter(ActorData.ByteData);
+
+		FObjectAndNameAsStringProxyArchive Ar(MemWriter, true);
+		// Find only variables with UPROPERTY(SaveGame)
+		Ar.ArIsSaveGame = true;
+		// Converts Actor's SaveGame UPROPERTIES into binary array
+		Actor->Serialize(Ar);
+
 		CurrentSaveGame->SavedActors.Add(ActorData);
 	}
-
 	UGameplayStatics::SaveGameToSlot(CurrentSaveGame, SlotName, 0);
 }
 
+
 void ASGameModeBase::LoadSaveGame()
 {
-	if(UGameplayStatics::DoesSaveGameExist(SlotName, 0))
+	if (UGameplayStatics::DoesSaveGameExist(SlotName, 0))
 	{
 		CurrentSaveGame = Cast<USSaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName, 0));
-		if(CurrentSaveGame == nullptr)
+		if (CurrentSaveGame == nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Failed to load SaveGame Data."));
 			return;
 		}
 
-		UE_LOG(LogTemp, Log, TEXT("Loading SaveGame Data."));
+		UE_LOG(LogTemp, Log, TEXT("Loaded SaveGame Data."));
 
+		// Iterate the entire world of actors
 		for (FActorIterator It(GetWorld()); It; ++It)
 		{
+
 			AActor* Actor = *It;
 			// Only interested in our 'gameplay actors'
-			if(!Actor->Implements<USGameplayInterface>())
+			if (!Actor->Implements<USGameplayInterface>())
 			{
 				continue;
 			}
 
-			for(FActorSaveData ActorData : CurrentSaveGame->SavedActors)
+			for (FActorSaveData ActorData : CurrentSaveGame->SavedActors)
 			{
-
-				UE_LOG(LogTemp, Warning, TEXT("ActorData.... %s"), *ActorData.ActorName);
-				if(ActorData.ActorName == Actor->GetName())
+				if (ActorData.ActorName == Actor->GetName())
 				{
+
 					Actor->SetActorTransform(ActorData.Transform);
-					UE_LOG(LogTemp, Warning, TEXT("Setting transform for %s"), *ActorData.ActorName);
+					FMemoryReader MemReader(ActorData.ByteData);
+
+					FObjectAndNameAsStringProxyArchive Ar(MemReader, true);
+					Ar.ArIsSaveGame = true;
+					// Convert binary array back into actor's variables
+					Actor->Serialize(Ar);
+
+					ISGameplayInterface::Execute_OnActorLoaded(Actor);
+
 					break;
 				}
 			}
@@ -262,8 +292,5 @@ void ASGameModeBase::LoadSaveGame()
 	else
 	{
 		CurrentSaveGame = Cast<USSaveGame>(UGameplayStatics::CreateSaveGameObject(USSaveGame::StaticClass()));
-
-		UE_LOG(LogTemp, Log, TEXT("Created New SaveGame Data."));
 	}
-
 }
