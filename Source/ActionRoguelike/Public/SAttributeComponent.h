@@ -71,7 +71,7 @@ protected:
 	UFUNCTION(NetMulticast, Reliable) // @FIXME: mark as unreliable once we moved the 'state' of our character.
 	void MulticastHealthChanged(AActor* InstigatorActor, float NewHealth, float Delta);
 
-	UFUNCTION(NetMulticast, Reliable) // @FIXME: mark as unreliable once we moved the 'state' of our character.
+	UFUNCTION(NetMulticast, Unreliable) // @FIXME: mark as unreliable once we moved the 'state' of our character.
 	void MulticastRageChanged(AActor* InstigatorActor, float NewRage, float Delta);
 public:	
 
@@ -89,8 +89,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
 	bool ApplyHealthChange(AActor* InstigatorActor, float Delta);
-
-
 
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
 	bool ApplyRageChange(AActor* InstigatorActor, float Delta);

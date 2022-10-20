@@ -3,6 +3,7 @@
 
 #include "SItemPickup.h"
 #include "Components/SphereComponent.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ASItemPickup::ASItemPickup()
@@ -12,11 +13,12 @@ ASItemPickup::ASItemPickup()
 
 	SphereComp = CreateDefaultSubobject<USphereComponent>("SphereComp");
 	SphereComp->SetCollisionProfileName("Pickup");
+	SphereComp->SetIsReplicated(true);
 	RootComponent = SphereComp;
-
 
 	ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemMesh"));
 	ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	ItemMesh->SetIsReplicated(true);
 	ItemMesh->SetupAttachment(RootComponent);
 
 	RespawnTime = 10.0f;
@@ -54,10 +56,22 @@ void ASItemPickup::Tick(float DeltaTime)
 
 }
 
+void ASItemPickup::OnRep_IsActive()
+{
+	SetActorEnableCollision(bIsActive);
+	// set visibility on root and all children
+	RootComponent->SetVisibility(bIsActive, true);
+}
+
 void ASItemPickup::SetPickupState(bool bNewIsActive)
 {
-	SetActorEnableCollision(bNewIsActive);
+	bIsActive = bNewIsActive;
+	OnRep_IsActive();
+}
 
-	// Set visibility on root and all children
-	RootComponent->SetVisibility(bNewIsActive, true);
+void ASItemPickup::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ASItemPickup, bIsActive);
 }

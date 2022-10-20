@@ -4,24 +4,56 @@
 #include "SPlayerState.h"
 
 #include "SSaveGame.h"
+#include "Net/UnrealNetwork.h"
 
-int32 ASPlayerState::AddCredits(AActor* InstigatorActor, int32 Amount)
+// void ASPlayerState::MulticastCreditChanged_Implementation(AActor* InstigatorActor, int32 NewAmount, float Delta)
+// {
+// 	OnCreditChanged.Broadcast(InstigatorActor, this, NewAmount, Delta);
+// }
+
+void ASPlayerState::AddCredits(int32 Delta)
 {
-	Credits += Amount;
-	OnCreditChanged.Broadcast(InstigatorActor, this, Credits, Amount);
-	return Credits;
+	// Avoid user-error of adding a negative amount
+	if (!ensure(Delta >= 0.0f))
+	{
+		return;
+	}
+
+	Credits += Delta;
+
+	OnCreditsChanged.Broadcast(this, Credits, Delta);
 }
 
-bool ASPlayerState::SpendCredits(AActor* InstigatorActor, int32 Amount)
+
+bool ASPlayerState::RemoveCredits(int32 Delta)
 {
-	if (Amount > Credits)
+	// Avoid user-error of adding a subtracting negative amount
+	if (!ensure(Delta >= 0.0f))
 	{
 		return false;
 	}
-	Credits -= Amount;
-	OnCreditChanged.Broadcast(InstigatorActor, this, Credits, -Amount);
+
+	if (Credits < Delta)
+	{
+		// Not enough credits available
+		return false;
+	}
+
+	Credits -= Delta;
+
+	OnCreditsChanged.Broadcast(this, Credits, -Delta);
+
 	return true;
 }
+int32 ASPlayerState::GetCredits() const
+{
+	return Credits;
+}
+void ASPlayerState::OnRep_Credits(int32 OldCredits)
+{
+	OnCreditsChanged.Broadcast(this, Credits, Credits - OldCredits);
+}
+
 
 void ASPlayerState::SavePlayerState_Implementation(USSaveGame* SaveObject)
 {
@@ -35,6 +67,17 @@ void ASPlayerState::LoadPlayerState_Implementation(USSaveGame* SaveObject)
 {
 	if(SaveObject)
 	{
-		Credits = SaveObject->Credits;
+		//Credits = SaveObject->Credits;
+		// Makes sure we trigger credits changed event
+		AddCredits(SaveObject->Credits);
 	}
+}
+
+void ASPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ASPlayerState, Credits);
+
 }

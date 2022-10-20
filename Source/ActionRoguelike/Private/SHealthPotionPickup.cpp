@@ -20,7 +20,7 @@ void ASHealthPotionPickup::Interact_Implementation(APawn* InstigatorPawn)
 		USAttributeComponent* AttributeComp = InstigatorPawn->FindComponentByClass<USAttributeComponent>();
 		if(AttributeComp)
 		{
-			if(!PlayerState->SpendCredits(GetParentActor(), 5))
+			if(!PlayerState->RemoveCredits(-5))
 			{
 				return;
 			}
