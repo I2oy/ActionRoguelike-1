@@ -31,6 +31,11 @@ void ASItemPickup::Interact_Implementation(APawn* InstigatorPawn)
 	HideAndCooldownPowerUp();
 }
 
+FText ASItemPickup::GetInteractText_Implementation(APawn* InstigatorPawn)
+{
+	return FText::GetEmpty();
+}
+
 void ASItemPickup::Respawn()
 {
 	SetPickupState(true);

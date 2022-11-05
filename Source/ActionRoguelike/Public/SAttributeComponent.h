@@ -18,6 +18,9 @@ class ACTIONROGUELIKE_API USAttributeComponent : public UActorComponent
 public:
 
 	UFUNCTION(BlueprintCallable)
+	bool IsFullHealth();
+
+	UFUNCTION(BlueprintCallable)
 	float GetHealth();
 
 	UFUNCTION(BlueprintCallable)

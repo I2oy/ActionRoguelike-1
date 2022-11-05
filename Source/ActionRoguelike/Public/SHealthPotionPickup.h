@@ -16,10 +16,14 @@ class ACTIONROGUELIKE_API ASHealthPotionPickup : public ASItemPickup
 
 public:
 
+	int32 CreditCost;
+
 	ASHealthPotionPickup();
 	
 	UPROPERTY(EditDefaultsOnly, Category="Pickup Effects");
 	float HealthRestore;
 	
 	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
+
+	virtual FText GetInteractText_Implementation(APawn* InstigatorPawn) override;
 };

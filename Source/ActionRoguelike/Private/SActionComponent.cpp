@@ -47,7 +47,7 @@ void USActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 			*GetNameSafe(GetOwner()),
 			*GetNameSafe(Action));
 
-		LogOnScreen(this, ActionMsg, TextColor, 0.0f);
+		// LogOnScreen(this, ActionMsg, TextColor, 0.0f);
 	}
 }
 

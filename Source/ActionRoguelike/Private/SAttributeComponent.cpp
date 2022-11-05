@@ -30,6 +30,11 @@ bool USAttributeComponent::IsAlive() const
 	return Health > 0.0f;
 }
 
+bool USAttributeComponent::IsFullHealth()
+{
+	return Health >= MaxHealth;
+}
+
 float USAttributeComponent::GetHealth()
 {
 	return Health;

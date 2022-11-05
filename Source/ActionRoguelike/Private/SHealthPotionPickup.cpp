@@ -6,10 +6,12 @@
 #include "SAttributeComponent.h"
 #include "SPlayerState.h"
 
+#define LOCTEXT_NAMESPACE "InteractableActors"
 
 ASHealthPotionPickup::ASHealthPotionPickup()
 {
 	HealthRestore = 50.0f;
+	CreditCost = 5;
 }
 
 void ASHealthPotionPickup::Interact_Implementation(APawn* InstigatorPawn)
@@ -32,3 +34,17 @@ void ASHealthPotionPickup::Interact_Implementation(APawn* InstigatorPawn)
 	}
 	Super::Interact_Implementation(InstigatorPawn);
 }
+
+FText ASHealthPotionPickup::GetInteractText_Implementation(APawn* InstigatorPawn)
+{
+	USAttributeComponent* AttributeComp = InstigatorPawn->FindComponentByClass<USAttributeComponent>();
+	if(AttributeComp && AttributeComp->IsFullHealth())
+	{
+		return LOCTEXT("HealthPotion_FullHealthWarning", "Already at full health.");
+	}
+
+	return FText::Format(LOCTEXT("HealthPotion_InteractMessage", "Cost {0} Credits. restores health to maximum."), CreditCost);
+
+}
+
+#undef LOCTEXT_NAMESPACE
